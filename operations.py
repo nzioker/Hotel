@@ -64,22 +64,31 @@ class Rooms:
             new_selection = self.take_input(f"Unfortunately, Your payment is insufficient. Select one of these other tiers {self.remaining_tiers}")
             self.book_a_room(new_selection)
 
+    def select_number_of_nights(self, user_input):
+        try:
+            number_of_nights = int( self.take_input(f"Room is available. How many nights do you want to pay for? It costs USD {self.cost[user_input]} per night. "))
+            self.total_cost = (number_of_nights * self.cost[user_input] * self.number_of_rooms)
+            payment = int(self.take_input(f"Kindly make payment of USD {self.total_cost} "))
+            self.room_number = self.generate_room_numbers(user_input)
+            self.booked_rooms.append(self.room_number)
+            self.process_payments(payment, user_input)
+        except ValueError:
+            print("Pass in numbers instead of letters or symbols")
+            self.select_number_of_nights(user_input)
+
     def book_a_room(self, user_input):
         self.remaining_tiers = list(self.rooms.keys())
         self.remaining_tiers.remove(user_input)
         if self.rooms[user_input] > 0:
-            self.number_of_rooms = int(self.take_input("How many rooms do you want to pay for? "))
-            if self.number_of_rooms < self.rooms[user_input]:
-                number_of_nights = int( self.take_input(f"Room is available. How many nights do you want to pay for? It costs USD {self.cost[user_input]} per night. "))
-                self.total_cost = (
-                    number_of_nights * self.cost[user_input] * self.number_of_rooms
-                )
-                payment = int(self.take_input(f"Kindly make payment of USD {self.total_cost} "))
-                self.room_number = self.generate_room_numbers(user_input)
-                self.booked_rooms.append(self.room_number)
-                self.process_payments(payment, user_input)
-            else:
-                new_selection = self.take_input(f"We're sorry. The cannot book this number of rooms for this tier. Select one of these other tiers {self.remaining_tiers}")
+            try:
+                self.number_of_rooms = int(self.take_input("How many rooms do you want to pay for? "))
+                if self.number_of_rooms < self.rooms[user_input]:
+                    self.select_number_of_nights(user_input)
+                else:
+                    new_selection = self.take_input(f"We're sorry. The cannot book this number of rooms for this tier. Select one of these other tiers {self.remaining_tiers}")
+            except ValueError:
+                print("Only numbers are accepted.")
+                self.book_a_room(user_input)
         else:
             new_selection = self.take_input(f"Unfortunately, all our rooms for that tier are booked. Select one of these other tiers {self.remaining_tiers}")
             self.book_a_room(new_selection)
